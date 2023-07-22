@@ -15,6 +15,7 @@ node(){
 	}
 	
 	stage('Code Scan'){
+                def scannerHome = tool name: 'sonar_scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation';
 		withSonarQubeEnv(credentialsId: 'SonarQubeCreds') {
 			sh "${sonarHome}/bin/sonar-scanner"
 		}
