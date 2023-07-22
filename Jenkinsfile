@@ -3,7 +3,7 @@ node(){
 	def sonarHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
 	
 	stage('Code Checkout'){
-		checkout changelog: false, poll: false, scm: scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'GitHubCreds', url: 'https://github.com/anujdevopslearn/MavenBuild']])
+		checkout changelog: false, poll: false, scm: scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'GitHubCreds', url: 'https://github.com/Thinhrichkidz/test_CICD']])
 	}
 	stage('Build Automation'){
 		sh """
@@ -15,7 +15,6 @@ node(){
 	}
 	
 	stage('Code Scan'){
-                def scannerHome = tool name: 'sonar_scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation';
 		withSonarQubeEnv(credentialsId: 'SonarQubeCreds') {
 			sh "${sonarHome}/bin/sonar-scanner"
 		}
