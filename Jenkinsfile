@@ -1,28 +1,53 @@
-node(){
+pipeline {
+    agent any
 
-	def sonarHome = tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
-	
-	stage('Code Checkout'){
-		checkout changelog: false, poll: false, scm: scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'GitHubCreds', url: 'https://github.com/anujdevopslearn/MavenBuild']])
-	}
-	stage('Build Automation'){
-		sh """
-			ls -lart
-			mvn clean install
-			ls -lart target
+    tools {
+        // Define the SonarScanner tool with the correct type and name
+        sonarScanner 'SonarScanner'
+    }
 
-		"""
-	}
-	
-	stage('Code Scan'){
-                def scannerHome = tool name: 'sonar_scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation';
-		withSonarQubeEnv(credentialsId: 'SonarQubeCreds') {
-			sh "${sonarHome}/bin/sonar-scanner"
-		}
-		
-	}
-	
-	stage('Code Deployment'){
-		deploy adapters: [tomcat9(credentialsId: 'TomcatCreds', path: '', url: 'http://54.197.62.94:8080/')], contextPath: 'Planview', onFailure: false, war: 'target/*.war'
-	}
+    stages {
+        stage('Code Checkout'){
+            steps {
+                checkout changelog: false, poll: false, scm: scmGit(
+                    branches: [[name: '*/master']],
+                    extensions: [], 
+                    userRemoteConfigs: [[credentialsId: 'GitHubCreds', url: 'https://github.com/anujdevopslearn/MavenBuild']]
+                )
+            }
+        }
+
+        stage('Build Automation'){
+            steps {
+                sh """
+                    ls -lart
+                    mvn clean install
+                    ls -lart target
+                """
+            }
+        }
+
+        stage('Code Scan'){
+            steps {
+                withSonarQubeEnv(credentialsId: 'SonarQubeCreds') {
+                    sh "${tool name: 'SonarScanner'}/bin/sonar-scanner"
+                }
+            }
+        }
+
+        stage('Code Deployment'){
+            steps {
+                deploy adapters: [
+                    tomcat9(
+                        credentialsId: 'TomcatCreds', 
+                        path: '', 
+                        url: 'http://54.197.62.94:8080/'
+                    )
+                ], 
+                contextPath: 'Planview', 
+                onFailure: false, 
+                war: 'target/*.war'
+            }
+        }
+    }
 }
